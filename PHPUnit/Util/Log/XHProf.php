@@ -182,6 +182,10 @@ class PHPUnit_Util_Log_XHProf implements PHPUnit_Framework_TestListener
     {
     }
 
+    public function addRiskyTest(PHPUnit_Framework_Test $test, Exception $e, $time)
+    {
+    }
+
     /**
      * A test started.
      *
@@ -189,6 +193,10 @@ class PHPUnit_Util_Log_XHProf implements PHPUnit_Framework_TestListener
      */
     public function startTest(PHPUnit_Framework_Test $test)
     {
+        if (!extension_loaded('xhprof')) {
+            return;
+        }
+
         if (!isset($this->options['xhprofFlags'])) {
             $flags = XHPROF_FLAGS_CPU + XHPROF_FLAGS_MEMORY;
         } else {
@@ -212,9 +220,18 @@ class PHPUnit_Util_Log_XHProf implements PHPUnit_Framework_TestListener
      */
     public function endTest(PHPUnit_Framework_Test $test, $time)
     {
+        if (!extension_loaded('xhprof')) {
+            return;
+        }
+
         $data         = xhprof_disable();
         $runs         = new XHProfRuns_Default;
-        $run          = $runs->save_run($data, $this->options['appNamespace']);
+
+        $run_id       = substr($test->toString(), strrpos($test->toString(), '\\') + 1, 200);
+        $run_id       = str_replace(array('::', ' '), array('__', '_'), $run_id);
+        $run_id       = preg_replace('/[^a-zA-z0-9_]/im', '', $run_id);
+
+        $run          = $runs->save_run($data, $this->options['appNamespace'], $run_id);
         $this->runs[$test->getName()] = $this->options['xhprofWeb'] . '?run=' . $run .
                                         '&source=' . $this->options['appNamespace'];
     }
@@ -226,6 +243,10 @@ class PHPUnit_Util_Log_XHProf implements PHPUnit_Framework_TestListener
      */
     public function startTestSuite(PHPUnit_Framework_TestSuite $suite)
     {
+        if (!extension_loaded('xhprof')) {
+            return;
+        }
+
         $this->suites++;
     }
 
@@ -236,6 +257,10 @@ class PHPUnit_Util_Log_XHProf implements PHPUnit_Framework_TestListener
      */
     public function endTestSuite(PHPUnit_Framework_TestSuite $suite)
     {
+        if (!extension_loaded('xhprof')) {
+            return;
+        }
+
         $this->suites--;
 
         if ($this->suites == 0) {
