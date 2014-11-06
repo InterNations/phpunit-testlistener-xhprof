@@ -227,7 +227,9 @@ class PHPUnit_Util_Log_XHProf implements PHPUnit_Framework_TestListener
         $data         = xhprof_disable();
         $runs         = new XHProfRuns_Default;
 
-        $run_id       = substr($test->toString(), strrpos($test->toString(), '\\') + 1, 200);
+        $test_name    = $test->toString();
+        $search_start = -(strlen($test_name) - strpos($test_name, '::'));
+        $run_id       = substr($test_name, strrpos($test_name, '\\', $search_start) + 1, 200);
         $run_id       = str_replace(array('::', ' '), array('__', '_'), $run_id);
         $run_id       = preg_replace('/[^a-zA-z0-9_]/im', '', $run_id);
 
