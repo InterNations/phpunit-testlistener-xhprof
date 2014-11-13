@@ -232,6 +232,7 @@ class PHPUnit_Util_Log_XHProf implements PHPUnit_Framework_TestListener
         $run_id       = substr($test_name, strrpos($test_name, '\\', $search_start) + 1, 200);
         $run_id       = str_replace(array('::', ' '), array('__', '_'), $run_id);
         $run_id       = preg_replace('/[^a-zA-z0-9_]/im', '', $run_id);
+        $run_id       = date('Ymd-His') . '_' . $run_id;
 
         $run          = $runs->save_run($data, $this->options['appNamespace'], $run_id);
         $this->runs[$test->getName()] = $this->options['xhprofWeb'] . '?run=' . $run .
